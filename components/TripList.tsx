@@ -16,6 +16,7 @@ export default function TripList({ trips }: { trips: Trip[] }) {
       <table className="w-full text-sm">
         <thead>
           <tr className="bg-asphalt text-paper text-left">
+            <th className="px-3 py-2 field-label !text-paper/70">#</th>
             <th className="px-3 py-2 field-label !text-paper/70">Date</th>
             <th className="px-3 py-2 field-label !text-paper/70">Vehicle</th>
             <th className="px-3 py-2 field-label !text-paper/70">Company</th>
@@ -28,6 +29,7 @@ export default function TripList({ trips }: { trips: Trip[] }) {
         <tbody>
           {trips.map((t, i) => (
             <tr key={t.id} className={i % 2 ? "bg-asphalt/5" : ""}>
+              <td className="px-3 py-2 font-mono text-slate">{i + 1}</td>
               <td className="px-3 py-2 font-mono whitespace-nowrap">{t.trip_date}</td>
               <td className="px-3 py-2 font-mono whitespace-nowrap">{t.vehicle_number}</td>
               <td className="px-3 py-2">{t.company_name}</td>

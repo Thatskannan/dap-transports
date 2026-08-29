@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import type { Trip } from "@/lib/types";
+import DriverDetails from "@/components/DriverDetails";
+import BalanceDetails from "@/components/BalanceDetails";
 
 function monthOptions() {
   const opts: { value: string; label: string }[] = [];
@@ -94,21 +96,26 @@ export default function ReportsPage() {
   const inr = (n: number) => `₹ ${n.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="font-display font-bold text-2xl">Monthly Report</h1>
-        <select
-          className="border border-asphalt/15 rounded px-3 py-2 text-sm font-mono bg-white"
-          value={month}
-          onChange={(e) => setMonth(e.target.value)}
-        >
-          {options.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-      </div>
+    <div className="flex flex-col gap-10">
+      <DriverDetails />
+
+      <BalanceDetails />
+
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <h2 className="font-display font-bold text-2xl">Monthly Report</h2>
+          <select
+            className="border border-asphalt/15 rounded px-3 py-2 text-sm font-mono bg-white"
+            value={month}
+            onChange={(e) => setMonth(e.target.value)}
+          >
+            {options.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </div>
 
       {loading ? (
         <p className="text-slate text-sm">Loading…</p>
@@ -122,7 +129,6 @@ export default function ReportsPage() {
             <StatCard label="Total Trips" value={String(totals.trips)} />
             <StatCard label="Total Business (Rent)" value={inr(totals.rent)} accent="signal" />
             <StatCard label="Received from Companies" value={inr(totals.received)} />
-            <StatCard label="Pending from Companies" value={inr(totals.pendingFromCompany)} accent="deficit" />
             <StatCard label="Total Driver Salary" value={inr(totals.driverSalary)} />
             <StatCard label="Advance Paid to Drivers" value={inr(totals.driverAdvance)} />
             <StatCard label="Total Diesel Cost" value={inr(totals.diesel)} />
@@ -139,6 +145,7 @@ export default function ReportsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-asphalt text-paper text-left">
+                  <th className="px-3 py-2 field-label !text-paper/70">#</th>
                   <th className="px-3 py-2 field-label !text-paper/70">Date</th>
                   <th className="px-3 py-2 field-label !text-paper/70">Vehicle</th>
                   <th className="px-3 py-2 field-label !text-paper/70">Company</th>
@@ -151,6 +158,7 @@ export default function ReportsPage() {
               <tbody>
                 {trips.map((t, i) => (
                   <tr key={t.id} className={i % 2 ? "bg-asphalt/5" : ""}>
+                    <td className="px-3 py-2 font-mono text-slate">{i + 1}</td>
                     <td className="px-3 py-2 font-mono whitespace-nowrap">{t.trip_date}</td>
                     <td className="px-3 py-2 font-mono whitespace-nowrap">{t.vehicle_number}</td>
                     <td className="px-3 py-2">{t.company_name}</td>
@@ -171,6 +179,7 @@ export default function ReportsPage() {
           </div>
         </>
       )}
+      </div>
     </div>
   );
 }
