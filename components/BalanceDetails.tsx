@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
-export default function BalanceDetails() {
+export default function BalanceDetails({ refreshKey }: { refreshKey: number }) {
   const [pendingFromCompanies, setPendingFromCompanies] = useState(0);
   const [balanceToDrivers, setBalanceToDrivers] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -13,13 +13,15 @@ export default function BalanceDetails() {
       setLoading(true);
       const { data } = await supabase
         .from("trips")
-        .select("balance_from_company, driver_balance");
+        .select("balance_from_company, driver_balance, company_paid");
 
       if (data) {
         let fromCompanies = 0;
         let toDrivers = 0;
         for (const row of data) {
-          fromCompanies += Number(row.balance_from_company) || 0;
+          if (!row.company_paid) {
+            fromCompanies += Number(row.balance_from_company) || 0;
+          }
           toDrivers += Number(row.driver_balance) || 0;
         }
         setPendingFromCompanies(fromCompanies);
@@ -28,7 +30,7 @@ export default function BalanceDetails() {
       setLoading(false);
     }
     load();
-  }, []);
+  }, [refreshKey]);
 
   const inr = (n: number) => `₹ ${n.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 
@@ -44,7 +46,7 @@ export default function BalanceDetails() {
             <div className="stat-number text-2xl font-bold mt-1 text-deficit">
               {inr(pendingFromCompanies)}
             </div>
-            <div className="text-xs text-slate mt-1">All-time outstanding</div>
+            <div className="text-xs text-slate mt-1">All-time outstanding, excludes trips marked paid</div>
           </div>
           <div className="ledger-card p-5">
             <div className="field-label">Balance to be Paid to Drivers</div>
