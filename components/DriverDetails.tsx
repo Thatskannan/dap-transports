@@ -9,7 +9,7 @@ type DriverStat = {
   lastSalary: number;
 };
 
-export default function DriverDetails() {
+export default function DriverDetails({ refreshKey }: { refreshKey: number }) {
   const [drivers, setDrivers] = useState<DriverStat[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,7 +40,7 @@ export default function DriverDetails() {
       setLoading(false);
     }
     load();
-  }, []);
+  }, [refreshKey]);
 
   const inr = (n: number) => `₹ ${n.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 
