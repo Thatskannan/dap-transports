@@ -14,6 +14,7 @@ export type Trip = {
   driver_balance: number;
   diesel_cost: number;
   fasttag: number;
+  company_paid: boolean;
   net_profit: number;
   created_at: string;
 };
