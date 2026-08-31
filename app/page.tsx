@@ -34,7 +34,7 @@ export default function Home() {
         {loading ? (
           <p className="text-slate text-sm">Loading…</p>
         ) : (
-          <TripList trips={trips} />
+          <TripList trips={trips} onChanged={loadTrips} />
         )}
       </div>
     </div>
