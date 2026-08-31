@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import type { Trip } from "@/lib/types";
 import DriverDetails from "@/components/DriverDetails";
 import BalanceDetails from "@/components/BalanceDetails";
+import CompanyDetails from "@/components/CompanyDetails";
 
 function monthOptions() {
   const opts: { value: string; label: string }[] = [];
@@ -42,6 +43,7 @@ export default function ReportsPage() {
   const [month, setMonth] = useState(options[0].value);
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     async function load() {
@@ -62,7 +64,18 @@ export default function ReportsPage() {
       setLoading(false);
     }
     load();
-  }, [month]);
+  }, [month, refreshKey]);
+
+  async function togglePaid(id: string, paid: boolean) {
+    setTrips((prev) => prev.map((t) => (t.id === id ? { ...t, company_paid: paid } : t)));
+    const { error } = await supabase.from("trips").update({ company_paid: paid }).eq("id", id);
+    if (error) {
+      // revert on failure
+      setTrips((prev) => prev.map((t) => (t.id === id ? { ...t, company_paid: !paid } : t)));
+      return;
+    }
+    setRefreshKey((k) => k + 1);
+  }
 
   const totals = useMemo(() => {
     return trips.reduce(
@@ -97,9 +110,11 @@ export default function ReportsPage() {
 
   return (
     <div className="flex flex-col gap-10">
-      <DriverDetails />
+      <DriverDetails refreshKey={refreshKey} />
 
-      <BalanceDetails />
+      <CompanyDetails refreshKey={refreshKey} />
+
+      <BalanceDetails refreshKey={refreshKey} />
 
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between flex-wrap gap-3">
@@ -150,9 +165,11 @@ export default function ReportsPage() {
                   <th className="px-3 py-2 field-label !text-paper/70">Vehicle</th>
                   <th className="px-3 py-2 field-label !text-paper/70">Company</th>
                   <th className="px-3 py-2 field-label !text-paper/70 text-right">Rent</th>
+                  <th className="px-3 py-2 field-label !text-paper/70 text-right">Balance</th>
                   <th className="px-3 py-2 field-label !text-paper/70 text-right">Diesel</th>
                   <th className="px-3 py-2 field-label !text-paper/70 text-right">Driver Salary</th>
                   <th className="px-3 py-2 field-label !text-paper/70 text-right">Net Profit</th>
+                  <th className="px-3 py-2 field-label !text-paper/70 text-center">Paid</th>
                 </tr>
               </thead>
               <tbody>
@@ -163,6 +180,9 @@ export default function ReportsPage() {
                     <td className="px-3 py-2 font-mono whitespace-nowrap">{t.vehicle_number}</td>
                     <td className="px-3 py-2">{t.company_name}</td>
                     <td className="px-3 py-2 font-mono text-right">{inr(Number(t.rent))}</td>
+                    <td className="px-3 py-2 font-mono text-right text-deficit">
+                      {t.company_paid ? "—" : inr(Number(t.balance_from_company))}
+                    </td>
                     <td className="px-3 py-2 font-mono text-right">{inr(Number(t.diesel_cost))}</td>
                     <td className="px-3 py-2 font-mono text-right">{inr(Number(t.driver_salary))}</td>
                     <td
@@ -171,6 +191,14 @@ export default function ReportsPage() {
                       }`}
                     >
                       {inr(Number(t.net_profit))}
+                    </td>
+                    <td className="px-3 py-2 text-center">
+                      <input
+                        type="checkbox"
+                        checked={t.company_paid}
+                        onChange={(e) => togglePaid(t.id, e.target.checked)}
+                        title="Mark company balance as fully paid"
+                      />
                     </td>
                   </tr>
                 ))}
